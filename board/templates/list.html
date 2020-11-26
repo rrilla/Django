@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>Board List</h1>
+<h3>{{boardCount}}개의 글이 등록되어 있음</h3>
+<h4><a href="/write">글쓰기</a></h4>
+
+<table border="1">
+		<th>번호</th>
+		<th>제목</th>
+		<th>내용</th>
+		<th>작성자</th>
+		<th>작성일</th>
+		<th>조회수</th>
+		<th>첨부파일</th>
+		<th>다운로드</th>
+	{% for row in boardList %} 
+		<tr>
+			<td>{{row.idx}}</td>
+			<td><a href="/detail?idx={{row.idx}}">{{row.title}}</a></td>
+			<td>{{row.content}}</td>
+			<td>{{row.writer}}</td>
+			<td>{{row.post_date|date:"Y-m-d"}}</td>
+			<td>{{row.hit}}</td>
+			<td>
+				{% if row.filesize > 0 %} <a href="/download?idx={{row.idx}}">
+				<img src="{% static "images/file.gif"%}" >
+				</a>
+				{% endif %}
+			</td>
+			<td>{{row.down}}</td>
+		</tr>
+	{% endfor %}
+	</table>
+</body>
+</html>

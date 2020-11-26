@@ -1,0 +1,89 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h1><a href="/list">홈</a></h1>
+<h1>상세보기~~</h1>
+<form method="post" name="form1"  enctype="multipart/form-data">
+<table border="1">
+		<th>번호</th>
+		<th>작성자</th>
+		<th>작성일</th>
+		<th>조회수</th>
+		<th>첨부파일</th>
+		<th>다운로드</th>
+		<tr>
+			<td>{{dto.idx}}</td>
+			<td>{{dto.writer}}</td>
+			<td>{{dto.post_date|date:"Y-m-d"}}</td>
+			<td>{{dto.hit}}</td>
+			<td>
+				{% if dto.filesize > 0 %} <a href="/download?idx={{dto.idx}}">
+				<img src="{% static "images/file.gif"%}" >
+				</a>
+				{% endif %}
+			</td>
+			<td>{{dto.down}}</td>
+		</tr>
+	</table>
+	제목 : <input type="text" name="title" value="{{dto.title}}"/><br/>
+	내용 : <textarea name="content" cols="50" rows="5" >{{dto.content}}</textarea><br />
+	파일첨부 : <input type="file" name="file" /><br />
+	<input type="hidden" name="writer" value="{{dto.writer}}" >
+	<input type="hidden" name="idx" value="{{dto.idx}}" >
+	<input type="button" onclick="update()" value="수정"/>
+	<input type="button" onclick="del()" value="삭제"/>
+	</form>
+	
+	<br /><br /><br />
+	<h1>댓글~~</h1>
+	<!-- 댓글 작성 -->
+	
+	<form method="post" action="reply_insert">
+	  {% csrf_token %}
+	  <input name="writer" placeholder="이름"><br>
+	  <textarea rows="5" cols="80" name="content" placeholder="댓글을 작성하세요">
+	  </textarea><br>
+	  <input type="hidden" name="idx" value="{{dto.idx}}">
+	  <button>댓글쓰기</button>
+	</form>
+	
+	
+	<!-- 댓글 목록을 출력할 영역 -->
+	<table border="1" width="700px">
+		{% for row in commentList %}
+		<tr>
+		  	<td>
+		  		{{row.writer}} ( {{row.post_date}} )<br>
+				{{row.content}}
+			</td>  		
+		</tr>
+		{% endfor %}
+	</table>
+	
+</body>
+
+<script>
+	function listReply(){
+		
+	}
+	
+	function home(){	
+		location.href = "/"
+	}
+	function update(){
+		document.form1.action = '/update'
+		document.form1.submit();
+	}
+	function del(){
+		document.form1.action = '/delete'
+		document.form1.submit();
+	}
+</script>
+
+</html>
