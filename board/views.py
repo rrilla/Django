@@ -38,11 +38,9 @@ def download(request):
     id=request.GET['idx'] 
     dto=Board.objects.get(idx=id) 
     path = UPLOAD_DIR+dto.filename 
-    print("path:",path) 
     filename= os.path.basename(path) 
-    #filename = filename.encode("utf-8") 
+    filename = filename.encode("utf-8") 
     filename = urlquote(filename) 
-    print("pfilename:",os.path.basename(path)) 
     with open(path, 'rb') as file:
         response = HttpResponse(file.read(), content_type="application/octet-stream")
         response["Content-Disposition"] = "attachment; filename*=UTF-8''{0}".format(filename)
@@ -83,7 +81,7 @@ def update(request):
     fsize=0 #기존 첨부파일 크기 
     if "file" in request.FILES: #새로운 첨부파일이 있으면 
         file=request.FILES["file"] 
-        fname=file._name #새로운 첨부파일의 이름 
+        fname=file.name #새로운 첨부파일의 이름 
         fp = open("%s%s" % (UPLOAD_DIR, fname), "wb") 
         for chunk in file.chunks(): 
             fp.write(chunk) #파일 저장 
