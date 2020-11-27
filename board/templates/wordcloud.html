@@ -1,0 +1,21 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>워드 클라우드</title>
+</head>
+<body>
+
+{% include 'header.html' %}
+
+<img src="{% static 'images/wordcloud01.png' %}">
+<br><br>
+<ul>
+{% for row in contents %}
+<li><p>{{row}}</p></li>
+{% endfor %}
+</ul>
+</body>
+</html>

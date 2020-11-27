@@ -1,21 +1,138 @@
 from django.shortcuts import render, redirect
-from board.models import Board, Comment
+from board.models import Board, Comment, Movie
 from django.views.decorators.csrf import csrf_exempt
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.utils.http import urlquote
+from django.db.models import Q
 import os
-from _csv import writer
+import math
+from board import bigdataPro
+from django.db.models.aggregates import Avg
+import pandas as pd
+UPLOAD_DIR='e:/upload/' #upload 폴더 
 
 # Create your views here.
+def movie_save(request):
+    data = []
+    bigdataPro.movie_crawling(data)
+    for row in data:
+        dto=Movie(title=row[0],point=int(row[1]),content=row[2])
+        dto.save()
+    return redirect('list/')
+
+def chart(request):
+    #sql='select title,avg(point) points from board_movie group by title'
+    #data=Movie.objects.raw(sql)
+    data=Movie.objects.values('title').annotate(point_avg=Avg('point'))[0:10]
+    df=pd.DataFrame(data)
+    bigdataPro.make_graph(df.title, df.point_avg)
+    return render(request,"chart.html",{"data":data})
+
+def wordcloud(request):
+    content = Movie.objects.values('content')
+    df = pd.DataFrame(content)
+    bigdataPro.saveWordcloud(df.content)
+    return render(request,"wordcloud.html",{"contents" : df.content})
+
+def cctv_map(request):
+    bigdataPro.cctv_map()
+    return render(request, "map/map01.html")
+    
+@csrf_exempt 
 def list(request): 
-    boardCount=Board.objects.count() 
-    boardList=Board.objects.all().order_by("-idx") 
+    #검색옵션, 검색값 
+    try: #예외가 발생할 가능성이 있는 코드 
+        search_option = request.POST["search_option"]
+    except: #예외가 발생했을 때의 코드 
+        search_option = "writer" 
+        
+    try: 
+        search= request.POST["search"] 
+    except: 
+        search = "" 
+        
+    if search_option=="all":
+        boardCount=Board.objects.filter(
+            Q(writer__contains=search) |
+            Q(title__contains=search) |
+            Q(content__contains=search)).count()
+    elif search_option=='writer':
+        boardCount=Board.objects.filter(writer__contains=search).count()
+    elif search_option=='title':
+        boardCount=Board.objects.filter(title__contains=search).count()
+    elif search_option=='content':
+        boardCount=Board.objects.filter(content__contains=search).count()
+    else:
+        boardCount=Board.objects.all().count()
+        
+        
+    try:
+        start=int(request.GET['start'])
+    except:
+        start = 0
+        
+    page_size = 5
+    block_size = 3
+    end = start + page_size
+    total_page = math.ceil(boardCount/page_size)
+    current_page = math.ceil((start+1)/page_size)
+    start_page = math.floor((current_page-1)/block_size)*block_size+1
+    end_page = start_page+block_size-1
+    
+    if end_page > total_page:
+        end_page = total_page
+    
+    if start_page >= block_size:
+        prev_list = (start_page-2)*page_size
+    else:
+        prev_list = 0
+    
+    if end_page < total_page:
+        next_list = end_page*page_size
+    else:
+        next_list = 0
+        
+    if search_option=="all":
+        boardList=Board.objects.filter(
+            Q(writer__contains=search) |
+            Q(title__contains=search) |
+            Q(content__contains=search)).order_by('-idx')[start:end]
+    elif search_option=='writer':
+        boardList=Board.objects.filter(writer__contains=search).order_by('-idx')[start:end]
+    elif search_option=='title':
+        boardList=Board.objects.filter(title__contains=search).order_by('-idx')[start:end]
+    elif search_option=='content':
+        boardList=Board.objects.filter(content__contains=search).order_by('-idx')[start:end]
+    else:
+        boardList=Board.objects.all().order_by('-idx')[start:end] 
+        
+    links = []
+    for i in range(start_page, end_page + 1):
+        page_start = (i-1)*page_size
+        links.append("<li class='page-item'><a class='page-link' href='/list?start="+str(page_start)+"'>"+str(i)+"</a></li>")
+    
+    return render(request, "list.html",
+                  {"boardList":boardList,
+                   "boardCount":boardCount,
+                   "search_option":search_option,
+                   "search":search,
+                   "range":range(start_page-1, end_page),
+                   "start_page":start_page,
+                   "end_page":end_page,
+                   "block_size":block_size,
+                   "total_page":total_page,
+                   "priv_list":prev_list,
+                   "next_list":next_list,
+                   "links":links})
+
+def list2(request): 
+    boardCount = Board.objects.count() 
+    boardList = Board.objects.all().order_by("-idx") 
     return render(request, 'list.html', {"boardList":boardList, "boardCount":boardCount})
 
 def write(request): 
     return render(request, "write.html")
 
-UPLOAD_DIR='e:/upload/' #upload 폴더 
 @csrf_exempt
 def insert(request): 
     fname = "" 

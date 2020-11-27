@@ -29,4 +29,11 @@ urlpatterns = [
     path('delete', views.delete),
     path("download", views.download),
     path("reply_insert", views.reply_insert),
+    
+    #크롤링
+    path('movie_save', views.movie_save),
+    path('chart', views.chart),
+    path('wordcloud', views.wordcloud),
+    #cctv
+    path('map', views.cctv_map),
 ]

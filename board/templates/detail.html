@@ -7,6 +7,9 @@
 <title>Insert title here</title>
 </head>
 <body>
+
+{% include 'header.html' %}
+
 <h1><a href="/list">홈</a></h1>
 <h1>상세보기~~</h1>
 <form method="post" name="form1"  enctype="multipart/form-data">
@@ -24,7 +27,7 @@
 			<td>{{dto.hit}}</td>
 			<td>
 				{% if dto.filesize > 0 %} <a href="/download?idx={{dto.idx}}">
-				<img src="{% static "images/file.gif"%}" >
+				<img src="{% static "images/file.gif"%}" style="">
 				</a>
 				{% endif %}
 			</td>
@@ -55,7 +58,7 @@
 	
 	
 	<!-- 댓글 목록을 출력할 영역 -->
-	<table border="1" width="700px">
+	<!-- <table border="1" width="700px">
 		{% for row in commentList %}
 		<tr>
 		  	<td>
@@ -64,7 +67,17 @@
 			</td>  		
 		</tr>
 		{% endfor %}
-	</table>
+	</table> -->
+	<br /><br />
+	<div class="media">
+		{% for row in commentList %}
+	  <img src="{% static "images/baby4.jpg"%}" class="align-self-start mr-3" style="width:100px; height: 100px;">
+	  <div class="media-body">
+	    <h4> {{row.writer}}( {{row.post_date}} ) </h4>
+	    {{row.content}}
+	  </div>
+	  {% endfor %}
+	</div>
 	
 </body>
 

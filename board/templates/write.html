@@ -5,6 +5,9 @@
 <title>Insert title here</title>
 </head>
 <body>
+
+{% include 'header.html' %}
+
 <h1>글쓰기~~~</h1>
 <form action="/insert" id="form1" name="form1" method="post" enctype="multipart/form-data">
 	{% csrf_token %}
